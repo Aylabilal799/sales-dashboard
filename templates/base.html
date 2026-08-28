@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Sales Dashboard{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">📊</span>
+        <span class="brand-text">Sales Dashboard</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/" class="nav-item {% if active == 'dashboard' %}active{% endif %}">
+          <span class="nav-icon">🏠</span> Dashboard
+        </a>
+        <a href="/upload" class="nav-item {% if active == 'upload' %}active{% endif %}">
+          <span class="nav-icon">📤</span> Upload Report
+        </a>
+        <a href="/monthly" class="nav-item {% if active == 'monthly' %}active{% endif %}">
+          <span class="nav-icon">📅</span> Monthly Setup
+        </a>
+        <a href="/products" class="nav-item {% if active == 'products' %}active{% endif %}">
+          <span class="nav-icon">📦</span> Products
+        </a>
+        <a href="/history" class="nav-item {% if active == 'history' %}active{% endif %}">
+          <span class="nav-icon">📜</span> History
+        </a>
+        <a href="/settings" class="nav-item {% if active == 'settings' %}active{% endif %}">
+          <span class="nav-icon">⚙️</span> Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        {% if user %}
+        <div style="font-size:12px;margin-bottom:8px;opacity:.9;">
+          📱 {{ user.mobile }}{% if user.name %}<br>{{ user.name }}{% endif %}
+        </div>
+        <a href="/logout" style="color:#93c5fd;font-size:13px;text-decoration:none;">Logout</a>
+        {% else %}
+        <small>Sales Dashboard</small>
+        {% endif %}
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="topbar-actions">
+          {% block topbar_actions %}{% endblock %}
+        </div>
+      </header>
+
+      <div class="content-area">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/static/js/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
