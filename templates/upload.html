@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Upload Report · Sales{% endblock %}
+{% block page_title %}Upload Report{% endblock %}
+
+{% block content %}
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+{% if not result %}
+<div class="panel">
+  <div class="panel-header">Upload PDF Sales Report</div>
+  <div class="panel-body">
+    <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+      <div id="upload-zone" class="upload-zone">
+        <div class="icon">📄</div>
+        <strong>Drop PDF here or click to browse</strong>
+        <p>Only PDF files from the sales system are supported</p>
+        <input type="file" name="file" id="pdf-file" accept=".pdf,application/pdf" style="display:none;" required>
+      </div>
+      <div class="mt-16 text-muted" style="font-size:12px;">
+        All sale &amp; target totals are <strong>Value = Qty × TP</strong>.
+        MTD uses <strong>Current Sale</strong> (MTD Qty − Other City).
+      </div>
+    </form>
+  </div>
+</div>
+{% else %}
+
+{% if result.overwrite_warning %}
+<div class="alert alert-warning">
+  ⚠️ A report for <strong>{{ result.report_date }}</strong> already exists. Saving will overwrite it.
+</div>
+{% endif %}
+
+{% if result.warnings %}
+<div class="alert alert-info">
+  {% for w in result.warnings %}<div>{{ w }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<div class="cards-grid">
+  <div class="card stat-card accent-blue">
+    <div class="stat-label">Today's Sale</div>
+    <div class="stat-value" id="card-today-sale">{{ format_number(result.today_sale_value) }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Per Day Target</div>
+    <div class="stat-value">{{ format_number(result.per_day_target) }}</div>
+  </div>
+  <div class="card stat-card accent-green">
+    <div class="stat-label">Today Ach %</div>
+    <div class="stat-value" id="card-today-ach">{{ result.today_achievement|int }}%</div>
+  </div>
+  <div class="card stat-card accent-blue">
+    <div class="stat-label">MTD Sale (Current)</div>
+    <div class="stat-value" id="card-mtd-sale">{{ format_number(result.mtd_sale_value) }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">MTD Target</div>
+    <div class="stat-value" id="card-mtd-target">{{ format_number(result.mtd_target) }}</div>
+  </div>
+  <div class="card stat-card accent-orange">
+    <div class="stat-label">MTD Ach %</div>
+    <div class="stat-value" id="card-mtd-ach">{{ result.mtd_achievement|int }}%</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    Extracted Products — {{ result.report_date }}
+    <span class="text-muted" style="font-weight:400;font-size:13px;">{{ result.psp_name }} · {{ result.town }}</span>
+  </div>
+  <div class="panel-body" style="padding:0;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="num">Today Qty</th>
+            <th class="num">MTD Qty</th>
+            <th class="num">TP</th>
+            <th class="num">Other City</th>
+            <th class="num">Current Sale</th>
+            <th class="num">Monthly Tgt Qty</th>
+            <th class="num">Tgt Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in result.products %}
+          <tr>
+            <td>
+              <strong>{{ p.display_name }}</strong><br>
+              <span class="text-muted" style="font-size:11px;">{{ p.pdf_name }}</span>
+            </td>
+            <td class="num">{{ p.today_qty|int if p.today_qty == p.today_qty|int else p.today_qty }}</td>
+            <td class="num">{{ p.mtd_qty|int if p.mtd_qty == p.mtd_qty|int else p.mtd_qty }}</td>
+            <td class="num">
+              <input type="number" class="table-input tp-input" data-idx="{{ loop.index0 }}"
+                     value="{{ p.tp }}" min="0" step="0.01" style="width:90px;">
+            </td>
+            <td class="num">
+              <input type="number" class="table-input other-city-input" data-idx="{{ loop.index0 }}"
+                     value="{{ p.other_city_sales|int }}" min="0" step="1">
+            </td>
+            <td class="num" id="current-sale-{{ loop.index0 }}">{{ p.current_sale|int if p.current_sale == p.current_sale|int else p.current_sale }}</td>
+            <td class="num">{{ p.monthly_target|int if p.monthly_target == p.monthly_target|int else p.monthly_target }}</td>
+            <td class="num" id="target-value-{{ loop.index0 }}">{{ format_number(p.target_value) if p.target_value is defined else format_number((p.monthly_target or 0) * (p.tp or 0)) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:700;background:#f8fafc;">
+            <td>TOTAL (Value = Qty × TP)</td>
+            <td class="num" id="total-today-value">{{ format_number(result.today_sale_value) }}</td>
+            <td class="num" colspan="2" style="text-align:right;padding-right:12px;">Other City Value →</td>
+            <td class="num" id="total-other-city-value">0</td>
+            <td class="num" id="total-current-sale-value">{{ format_number(result.mtd_sale_value) }}</td>
+            <td class="num"></td>
+            <td class="num" id="total-target-value">0</td>
+          </tr>
+          <tr style="font-weight:600;background:#eef2ff;font-size:13px;">
+            <td colspan="2">Today Sale Value: <span id="total-today-value-2">{{ format_number(result.today_sale_value) }}</span></td>
+            <td colspan="3">MTD Sale (Current) Value: <span id="total-mtd-value">{{ format_number(result.mtd_sale_value) }}</span></td>
+            <td colspan="3">Monthly Target Value: <span id="total-target-value-2">0</span></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if result.missing_configured %}
+<div class="alert alert-warning">
+  <strong>Configured products missing from PDF:</strong>
+  {% for m in result.missing_configured %}{{ m.display_name }}{% if not loop.last %}, {% endif %}{% endfor %}
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-header flex-between">
+    <span>Generated Message Preview</span>
+    <div class="flex gap-8">
+      <button type="button" id="copy-message-btn" class="btn btn-success btn-lg">📋 COPY MESSAGE</button>
+      <button type="button" id="save-report-btn" class="btn btn-primary btn-lg">💾 Save Report</button>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div id="generated-message" class="message-preview">{{ result.generated_message }}</div>
+  </div>
+</div>
+
+<a href="/upload" class="btn btn-outline mt-12">← Upload another PDF</a>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if result %}
+<script>
+  const resultData = {{ result | tojson }};
+  document.addEventListener('DOMContentLoaded', () => initUploadPage(resultData));
+</script>
+<style>
+  .input-error { border-color: #dc2626 !important; background: #fef2f2; }
+  tfoot td { border-top: 2px solid #cbd5e1; }
+</style>
+{% endif %}
+{% endblock %}
