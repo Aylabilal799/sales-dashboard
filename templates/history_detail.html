@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Report {{ report.report_date }} · Sales{% endblock %}
+{% block page_title %}Report — {{ report.report_date }}{% endblock %}
+{% block topbar_actions %}
+<a href="/history" class="btn btn-outline btn-sm">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="cards-grid">
+  <div class="card stat-card accent-blue">
+    <div class="stat-label">Today's Sale</div>
+    <div class="stat-value">{{ format_number(report.today_sale_value) }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Per Day Target</div>
+    <div class="stat-value">{{ format_number(report.per_day_target) }}</div>
+  </div>
+  <div class="card stat-card accent-green">
+    <div class="stat-label">Today Ach %</div>
+    <div class="stat-value">{{ report.today_achievement|int }}%</div>
+  </div>
+  <div class="card stat-card accent-blue">
+    <div class="stat-label">MTD Sale</div>
+    <div class="stat-value">{{ format_number(report.mtd_sale_value) }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">MTD Target</div>
+    <div class="stat-value">{{ format_number(report.mtd_target) }}</div>
+  </div>
+  <div class="card stat-card accent-orange">
+    <div class="stat-label">MTD Ach %</div>
+    <div class="stat-value">{{ report.mtd_achievement|int }}%</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">Product Breakdown</div>
+  <div class="panel-body" style="padding:0;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="num">Today Qty</th>
+            <th class="num">MTD Qty</th>
+            <th class="num">Other City</th>
+            <th class="num">Current Sale</th>
+            <th class="num">Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in report.products %}
+          <tr>
+            <td><strong>{{ p.display_name }}</strong></td>
+            <td class="num">{{ p.today_qty|int }}</td>
+            <td class="num">{{ p.mtd_qty|int }}</td>
+            <td class="num">{{ p.other_city_sales|int }}</td>
+            <td class="num">{{ p.current_sale|int }}</td>
+            <td class="num">{{ p.monthly_target|int }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header flex-between">
+    <span>Generated Message</span>
+    <button type="button" class="btn btn-success" onclick="copyToClipboard(document.getElementById('hist-msg').textContent)">📋 COPY MESSAGE</button>
+  </div>
+  <div class="panel-body">
+    <div id="hist-msg" class="message-preview">{{ report.generated_message }}</div>
+  </div>
+</div>
+{% endblock %}
