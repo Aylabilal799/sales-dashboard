@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login · Sales Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { background: #0f172a; min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; font-family: Inter, system-ui, sans-serif; }
+    .login-card { background: #fff; border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,.35); }
+    .login-card h1 { margin: 0 0 6px; font-size: 22px; color: #0f172a; }
+    .login-card .sub { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
+    .form-group input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .btn-login { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #2563eb; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 8px; }
+    .btn-login:hover { background: #1d4ed8; }
+    .alert { padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tabs a { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; color: #64748b; background: #f1f5f9; }
+    .tabs a.active { background: #2563eb; color: #fff; }
+    .hint { font-size: 12px; color: #94a3b8; margin-top: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>📊 Sales Dashboard</h1>
+    <p class="sub">Sign in with your mobile number</p>
+
+    <div class="tabs">
+      <a href="/login" class="{% if mode != 'register' %}active{% endif %}">Login</a>
+      <a href="/register" class="{% if mode == 'register' %}active{% endif %}">Register</a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    {% if mode == 'register' %}
+    <form method="post" action="/register">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" name="name" placeholder="e.g. Bilal Aziz" required value="{{ name or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Mobile Number</label>
+        <input type="tel" name="mobile" placeholder="03XXXXXXXXX" required value="{{ mobile or '' }}" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>PIN (4–6 digits)</label>
+        <input type="password" name="pin" placeholder="••••" required minlength="4" maxlength="6" pattern="[0-9]{4,6}" inputmode="numeric" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>Confirm PIN</label>
+        <input type="password" name="pin2" placeholder="••••" required minlength="4" maxlength="6" pattern="[0-9]{4,6}" inputmode="numeric" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn-login">Create Account</button>
+    </form>
+    {% else %}
+    <form method="post" action="/login">
+      <div class="form-group">
+        <label>Mobile Number</label>
+        <input type="tel" name="mobile" placeholder="03XXXXXXXXX" required value="{{ mobile or '' }}" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>PIN</label>
+        <input type="password" name="pin" placeholder="••••" required minlength="4" maxlength="6" pattern="[0-9]{4,6}" inputmode="numeric" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-login">Login</button>
+    </form>
+    {% endif %}
+
+    <p class="hint">Each mobile number has its own products, targets &amp; reports.</p>
+  </div>
+</body>
+</html>
