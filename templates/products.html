@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Products · Sales{% endblock %}
+{% block page_title %}Products{% endblock %}
+{% block topbar_actions %}
+<a href="/products/new" class="btn btn-primary btn-sm">+ Add Product</a>
+{% endblock %}
+
+{% block content %}
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success">Product saved.</div>
+{% endif %}
+{% if request.query_params.get('deleted') %}
+<div class="alert alert-success">Product deleted.</div>
+{% endif %}
+
+<div style="display:grid; grid-template-columns: 1fr {% if edit %}360px{% else %}0{% endif %}; gap:20px;">
+  <div class="panel">
+    <div class="panel-header">Configured Products</div>
+    <div class="panel-body" style="padding:0;">
+      {% if products %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Display Name</th>
+              <th>PDF Identifier</th>
+              <th>Code</th>
+              <th class="num">Default Target</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in products %}
+            <tr>
+              <td>{{ p.sort_order }}</td>
+              <td><strong>{{ p.display_name }}</strong></td>
+              <td><code style="font-size:12px;">{{ p.pdf_name }}</code></td>
+              <td>{{ p.product_code or '—' }}</td>
+              <td class="num">{{ p.monthly_target|int }}</td>
+              <td>
+                {% if p.is_active %}
+                <span class="badge badge-green">Active</span>
+                {% else %}
+                <span class="badge badge-red">Inactive</span>
+                {% endif %}
+              </td>
+              <td class="flex gap-8">
+                <a href="/products/{{ p.id }}" class="btn btn-outline btn-sm">Edit</a>
+                <form method="post" action="/products/delete/{{ p.id }}" onsubmit="return confirm('Delete this product?');" style="display:inline;">
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">No products configured. Add your first product.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if edit %}
+  <div class="panel">
+    <div class="panel-header">{% if is_new %}Add Product{% else %}Edit Product{% endif %}</div>
+    <div class="panel-body">
+      <form method="post" action="/products/save">
+        {% if not is_new %}<input type="hidden" name="product_id" value="{{ edit.id }}">{% endif %}
+        <div class="form-group mb-16">
+          <label>PDF Product Identifier *</label>
+          <input type="text" name="pdf_name" value="{{ edit.pdf_name }}" required placeholder="e.g. BRONOCHOL COUGH S">
+          <small class="text-muted">Must match the name as it appears in the PDF (without leading *)</small>
+        </div>
+        <div class="form-group mb-16">
+          <label>Display Name *</label>
+          <input type="text" name="display_name" value="{{ edit.display_name }}" required placeholder="e.g. Bronochol Syp">
+        </div>
+        <div class="form-group mb-16">
+          <label>Product Code</label>
+          <input type="text" name="product_code" value="{{ edit.product_code or '' }}" placeholder="e.g. 19798">
+        </div>
+        <div class="form-group mb-16">
+          <label>Default Monthly Target Qty</label>
+          <input type="number" name="monthly_target" value="{{ edit.monthly_target }}" min="0" step="1">
+        </div>
+        <div class="form-group mb-16">
+          <label>Sort Order</label>
+          <input type="number" name="sort_order" value="{{ edit.sort_order }}" min="0">
+        </div>
+        <div class="form-group mb-16">
+          <label>
+            <input type="checkbox" name="is_active" {% if edit.is_active %}checked{% endif %}> Active
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Product</button>
+        <a href="/products" class="btn btn-outline">Cancel</a>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
