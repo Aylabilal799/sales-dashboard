@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Monthly Setup · Sales{% endblock %}
+{% block page_title %}Monthly Setup{% endblock %}
+{% block topbar_actions %}
+<a href="/monthly/new" class="btn btn-primary btn-sm">+ New Month</a>
+{% endblock %}
+
+{% block content %}
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success">Monthly configuration saved.</div>
+{% endif %}
+{% if request.query_params.get('error') == 'exists' %}
+<div class="alert alert-error">A configuration for that month already exists. Edit the existing one instead.</div>
+{% endif %}
+
+<div style="display:grid; grid-template-columns: 280px 1fr; gap:20px;">
+  <div class="panel">
+    <div class="panel-header">Saved Months</div>
+    <div class="panel-body" style="padding:0;">
+      {% if configs %}
+      <div style="max-height:480px; overflow-y:auto;">
+        {% for c in configs %}
+        <a href="/monthly/{{ c.id }}" style="display:block; padding:12px 16px; border-bottom:1px solid var(--border); text-decoration:none; color:inherit; {% if edit and edit.id == c.id %}background:#eff6ff;{% endif %}">
+          <strong>{{ c.year }}-{{ '%02d'|format(c.month) }}</strong><br>
+          <span class="text-muted" style="font-size:12px;">{{ c.psp_name }} · {{ c.town }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">No monthly configs yet</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      {% if edit %}
+        {% if is_new %}New Monthly Configuration{% else %}Edit {{ edit.year }}-{{ '%02d'|format(edit.month) }}{% endif %}
+      {% else %}
+        Select a month or create a new one
+      {% endif %}
+    </div>
+    <div class="panel-body">
+      {% if edit %}
+      <form method="post" action="/monthly/save">
+        {% if edit.id %}<input type="hidden" name="config_id" value="{{ edit.id }}">{% endif %}
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Year</label>
+            <input type="number" name="year" value="{{ edit.year }}" required {% if not is_new %}readonly{% endif %}>
+          </div>
+          <div class="form-group">
+            <label>Month (1-12)</label>
+            <input type="number" name="month" value="{{ edit.month }}" min="1" max="12" required {% if not is_new %}readonly{% endif %}>
+          </div>
+          <div class="form-group">
+            <label>PSP Name</label>
+            <input type="text" name="psp_name" value="{{ edit.psp_name }}" required placeholder="e.g. Bilal Aziz">
+          </div>
+          <div class="form-group">
+            <label>Town</label>
+            <input type="text" name="town" value="{{ edit.town }}" required placeholder="e.g. Jhelum">
+          </div>
+          <div class="form-group">
+            <label>Monthly Sales Target (Rs.)</label>
+            <input type="number" name="monthly_sales_target" value="{{ edit.monthly_sales_target }}" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label>Working Days / Days in Month</label>
+            <input type="number" name="working_days" value="{{ edit.working_days }}" min="1" max="31">
+          </div>
+          <div class="form-group">
+            <label>Per Day Target Override (optional)</label>
+            <input type="number" name="per_day_target_override" value="{{ edit.per_day_target_override or '' }}" step="0.01" placeholder="Leave blank to auto-calculate">
+          </div>
+          <div class="form-group">
+            <label>Zero Qty Display</label>
+            <select name="zero_qty_display">
+              <option value="dash" {% if edit.zero_qty_display == 'dash' %}selected{% endif %}>Product –</option>
+              <option value="zero" {% if edit.zero_qty_display == 'zero' %}selected{% endif %}>Product – 0</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 style="margin:24px 0 12px; font-size:15px;">Product-wise Monthly Targets</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Display Name</th>
+                <th>PDF Identifier</th>
+                <th class="num">Target Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+              <tr>
+                <td>{{ p.display_name }}</td>
+                <td class="text-muted">{{ p.pdf_name }}</td>
+                <td class="num">
+                  <input type="number" name="target_{{ p.id }}" class="table-input"
+                         value="{{ edit.product_targets.get(p.id, p.monthly_target) }}" min="0" step="1">
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-20">
+          <button type="submit" class="btn btn-primary">Save Configuration</button>
+        </div>
+      </form>
+      {% else %}
+      <div class="empty-state">
+        <p>Choose a month from the list or create a new monthly setup.</p>
+        <a href="/monthly/new" class="btn btn-primary mt-16">+ New Month</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
