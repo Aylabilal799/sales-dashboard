@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}History · Sales{% endblock %}
+{% block page_title %}Report History{% endblock %}
+
+{% block content %}
+{% if request.query_params.get('deleted') %}
+<div class="alert alert-success">Report deleted.</div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-header">All Saved Reports</div>
+  <div class="panel-body" style="padding:0;">
+    {% if reports %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>File</th>
+            <th class="num">Today Sale</th>
+            <th class="num">MTD Sale</th>
+            <th class="num">Today %</th>
+            <th class="num">MTD %</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reports %}
+          <tr>
+            <td><strong>{{ r.report_date }}</strong></td>
+            <td class="text-muted" style="font-size:12px; max-width:200px; overflow:hidden; text-overflow:ellipsis;">{{ r.filename }}</td>
+            <td class="num">{{ format_number(r.today_sale_value) }}</td>
+            <td class="num">{{ format_number(r.mtd_sale_value) }}</td>
+            <td class="num">{{ r.today_achievement|int }}%</td>
+            <td class="num">{{ r.mtd_achievement|int }}%</td>
+            <td class="flex gap-8">
+              <a href="/history/{{ r.id }}" class="btn btn-outline btn-sm">View</a>
+              <form method="post" action="/history/delete/{{ r.id }}" onsubmit="return confirm('Delete this report?');" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">No reports saved yet. Upload a PDF to create your first report.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
