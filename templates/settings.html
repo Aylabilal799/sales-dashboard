@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Settings · Sales{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">Application Info</div>
+  <div class="panel-body">
+    <div class="form-grid">
+      <div>
+        <div class="stat-label">Framework</div>
+        <div>FastAPI + Jinja2 + SQLite</div>
+      </div>
+      <div>
+        <div class="stat-label">Port</div>
+        <div>3304</div>
+      </div>
+      <div>
+        <div class="stat-label">Database</div>
+        <div>sales_dashboard.db (SQLite)</div>
+      </div>
+      <div>
+        <div class="stat-label">PDF Engine</div>
+        <div>PyMuPDF (deterministic parser)</div>
+      </div>
+    </div>
+    <hr style="margin:20px 0; border:none; border-top:1px solid var(--border);">
+    <p class="text-muted">
+      Monthly settings, product mappings, and historical reports are stored in the local SQLite database.
+      Uploaded PDFs are kept in the <code>uploads/</code> folder.
+    </p>
+    <p class="text-muted mt-12">
+      To change zero-qty display style or product targets, use <strong>Monthly Setup</strong> and <strong>Products</strong>.
+    </p>
+  </div>
+</div>
+{% endblock %}
