@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.db
+.products_multiuser_ok
+uploads/*
+!uploads/.gitkeep
+venv/
+.env
+*.log
+.DS_Store
